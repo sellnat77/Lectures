@@ -10,6 +10,7 @@ print(func())
 
 # Does this change with nested functions?
 def func2(param1):
+    globalvalue = 5
     def inner():
         return param1 + globalvalue
     return inner
