@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module cursive.leiningen.project.LeiningenProjectsManager.isLeinModule="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Clojure" name="Clojure">
+      <configuration />
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/base+system+user+dev/classes" />
     <output-test url="file://$MODULE_DIR$/target/base+system+user+dev/classes" />
@@ -16,5 +21,6 @@
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.6.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.6" level="project" />
+    <orderEntry type="library" name="clojure-1.6.0" level="project" />
   </component>
 </module>
