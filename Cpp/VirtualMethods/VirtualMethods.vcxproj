@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AD39B799-F382-47CD-AC7E-D4F9A30FF453}</ProjectGuid>
+    <ProjectGuid>{AEF422B3-9725-47F3-9432-26910ABFEA26}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Switch</RootNamespace>
+    <RootNamespace>VirtualMethods</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,7 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="switch.cpp" />
+    <ClCompile Include="virtual.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
