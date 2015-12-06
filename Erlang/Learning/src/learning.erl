@@ -36,6 +36,11 @@ second([_]) -> undefined;
 second([_,H2|_]) -> H2.
 %% undefined if 0 or 1 elements only; otherwise gives second.
 
+third([]) -> undefined;
+third([_]) -> undefined;
+third([_,_]) -> undefined;
+third([_,_,H|_]) -> H.
+
 %% Remember binding rules...
 same(X,X) -> true;
 same(_,_) -> false.
@@ -50,6 +55,14 @@ abs(X) -> -X.
 fib(N) when N=:=0; N=:=1 -> 1;
 fib(N) when N>1 -> fib(N-1) + fib(N-2);
 fib(_) -> undefined.
+
+last([H]) -> H;
+last([H|T]) last([T]);
+last(_) -> undefined.
+
+butLast([H]) -> H;
+butLast([H|T]) butLast([T]);
+butLast(_) -> undefined.
 
 %% "and" and "or" don't work in guards, instead we use , and ;
 appropriate_age_for_mlp(Age) when Age >= 4, Age =< 9 -> true;
@@ -76,6 +89,27 @@ beach_weather(_) -> false.
 %% Final challenge: functions are first class citizens (should be no surprise!).
 %% Write the higher-order functions map, filter, and reduce.
 
+
+dowork() ->
+    receive
+        {pID, n} ->
+            if
+                n rem 2 =:= 0 -> n * n;
+                true -> n * 8;
+            end.
+    end.
+
+main() ->
+    Worker = spawn(homework5, dowork, []),
+    Worker ! {self(), 7},
+    end.
+
+int myGlobalCount = 2;
+
+int counterFunc(int x)
+{
+    return x + myGlobalCount;
+}
 
 
 
