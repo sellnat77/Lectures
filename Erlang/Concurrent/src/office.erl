@@ -1,57 +1,57 @@
 -module(office).
 -export([room/4, student/2, officedemo/0, busyOffice/0, checkFront/2, putTail/2,indexOf/2]).
 
-room(Students, Capacity, Queue,Helping) ->
+room(Students, Capacity, Queue, Helping) ->
+  io:format("Room called~n"),
   receive
-    %check if student is at front of queue
-    %If the queue is empty, student can be admitted automatically
-    %If the student is at the front of the queue admit them and modify the queue list and the students list appropriately
-    %If the student is not at the front of the queue send this:
-    %From ! {self(), room_full, rand:uniform(5000)},
-    % student entering, not at capacity
     {From, enter, Name} when Capacity > 0 ->
       case office:checkFront(Name,Queue) of
         %student is at front of queue or there is no queue
+        true when Queue =:= []->
+          io:format("Student admitted no queue~n"),
+          From ! {self(), ok},
+          room([Name|Students], Capacity - 1,Queue,Helping);
         true ->
+          io:format("Student admitted removing item from queue~n"),
           From ! {self(), ok},
           room([Name|Students], Capacity - 1,lists:delete(Name, Queue),Helping);
         %student is not at front of queue
         false->
-          QueueWait = 1000 * office:indexOf(Name,[Queue]),
+          io:format("Student not in queue must be placed in queue~n"),
+          %need to construct the queue appropriately with reverse
+          NewQueue = office:putTail(Name,Queue),
+          QueueWait = 1000 * office:indexOf(Name,NewQueue),
           From ! {self(), room_full, QueueWait},
-          room([Students], Capacity, [Queue],Helping)
-        end;
-
+          room([Students], Capacity, [NewQueue],Helping)
+      end;
 
     % student entering, at capacity
     {From, enter, Name} ->
       case lists:member(Name,Queue) of
       %student is in the queue
         true ->
+          io:format("Student in queue, waiting~n"),
           QueueWait = 1000 * office:indexOf(Name,Queue),
           From ! {self(), ok, QueueWait},
           room([Students], Capacity, [Queue],Helping);
           %student is not in the queue
         false->
+          io:format("Student not in queue must be placed in queue~n"),
           %need to construct the queue appropriately with reverse
           NewQueue = office:putTail(Name,Queue),
           QueueWait = 1000 * office:indexOf(Name,NewQueue),
           From ! {self(), room_full, QueueWait},
           room([Students], Capacity, [NewQueue],Helping)
         end;
-      %If the student is in the queue reply with message giving the sleep time for this student
-
-      %if the student is not in the queue append the new student in the queue
-      %must use reverse to append at end of list
-      %modify wait time for each student based on their postion in the queue
-
 
     {From, help_me, Name} ->
       case Helping of
         true->
+          io:format("helping true.~n"),
           From ! {self(), busy},
           room([Students],Capacity,[Queue],Helping);
         false->
+          io:format("helping false.~n"),
           From ! {self(), ok},
           room([Students],Capacity,[Queue],true)
       end;
@@ -61,15 +61,18 @@ room(Students, Capacity, Queue,Helping) ->
       % make sure they are already in the room
       case lists:member(Name, Students) of
         true ->
+          io:format("~B Leaving.~n", Name),
           From ! {self(), ok},
           room(lists:delete(Name, Students), Capacity + 1,[Queue],false);
         false ->
           From ! {self(), not_found},
+          io:format("~B not found.~n", Name),
           room([Students], Capacity,[Queue],false)
       end;
 
     % student thanks
     {From, thanks, Name} ->
+      io:format("~B thanks you.~n", Name),
       room([Students],Capacity,Queue,false)
 end.
 
@@ -81,18 +84,22 @@ studentWork(Name) ->
 student(Office, Name) ->
   timer:sleep(rand:uniform(3000)),
   Office ! {self(), enter, Name},
-  Office ! {self(), help_me, Name},
   receive
     % Success; can enter room.
     {_, ok} ->
+      Office ! {self(), help_me, Name},
       studentWork(Name),
+      io:format("~s ok without sleep.~n", [Name]),
       Office ! {self(), leave, Name},
       Office ! {self(), thanks, Name},
       io:format("~s left the Office.~n", [Name]);
 
   % Success; can enter room.
     {_, ok, SleepTime} ->
+      Office ! {self(), help_me, Name},
+      io:format("~s okwith sleep.~n", [Name]),
       studentWork(Name),
+      Office ! {self(), leave, Name},
       Office ! {self(), thanks, Name},
       io:format("~s left the Office.~n", [Name]);
 

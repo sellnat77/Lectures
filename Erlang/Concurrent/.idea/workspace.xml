@@ -27,8 +27,8 @@
       <file leaf-file-name="office.erl" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/office.erl">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.0568562">
-              <caret line="107" column="65" selection-start-line="107" selection-start-column="65" selection-end-line="107" selection-end-column="65" />
+            <state vertical-scroll-proportion="0.606466">
+              <caret line="41" column="29" selection-start-line="41" selection-start-column="29" selection-end-line="41" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -443,8 +443,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/office.erl">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0568562">
-          <caret line="107" column="65" selection-start-line="107" selection-start-column="65" selection-end-line="107" selection-end-column="65" />
+        <state vertical-scroll-proportion="0.606466">
+          <caret line="41" column="29" selection-start-line="41" selection-start-column="29" selection-end-line="41" selection-end-column="29" />
           <folding />
         </state>
       </provider>
