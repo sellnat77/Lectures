@@ -41,12 +41,13 @@ room(Students, Capacity, Queue, Helping) ->
 
         %Non-empty queue but somewhere already inline
         IsMemeber ->
+          io:format("~s Already in line~n",[Name]),
           QueueWait = 1000 * office:indexOf(Name,Queue),
           From ! {self(), room_full, QueueWait},
           room([Students], Capacity, [Queue],Helping);
 
         %Non-empty queue but not yet in queue
-        not IsMemeber, Queue =/= [] ->
+        true ->
           io:format("~s ISEMPTY",[IsEmpty]),
           io:format("~s the queue is ",[Queue]),
           io:format("~s not in queue must be placed in queue the queue is already populated with some items~n",[Name]),
@@ -56,12 +57,8 @@ room(Students, Capacity, Queue, Helping) ->
           From ! {self(), room_full, QueueWait},
           io:format("Queue:"),
           office:debugList(NewQueue),
-          room([Students], Capacity, [NewQueue],Helping);
-      %Empty queue - Immediate admittance
-        true ->
-          io:format("~s admitted no queue~n",[Name]),
-          From ! {self(), ok},
-          room([Name|Students], Capacity - 1,[],Helping)
+          room([Students], Capacity, [NewQueue],Helping)
+
       end;
 
 
