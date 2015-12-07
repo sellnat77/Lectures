@@ -61,27 +61,6 @@ room(Students, Capacity, Queue, Helping) ->
 
       end;
 
-
-      %case office:checkFront(Name,Queue) of
-      %  %student is at front of queue or there is no queue
-      %  true when Queue =:= []->
-      %    io:format("Student admitted no queue~n"),
-      %    From ! {self(), ok},
-      %    room([Name|Students], Capacity - 1,[],Helping);
-      %  true ->
-      %    io:format("Student admitted removing item from queue~n"),
-      %    From ! {self(), ok},
-      %    room([Name|Students], Capacity - 1,lists:delete(Name, Queue),Helping);
-      %  %student is not at front of queue
-      %  false->
-      %    io:format("Student not in queue must be placed in queue~n"),
-      %    %need to construct the queue appropriately with reverse
-      %    NewQueue = office:putTail(Name,Queue),
-      %    QueueWait = 1000 * office:indexOf(Name,NewQueue),
-      %    From ! {self(), room_full, QueueWait},
-      %    room([Students], Capacity, [NewQueue],Helping)
-      %end;
-
     % student entering, at capacity
     {From, enter, Name} ->
       IsEmpty = office:checkEmpty(Queue),
@@ -116,24 +95,6 @@ room(Students, Capacity, Queue, Helping) ->
           room([Students], Capacity, [NewQueue],Helping)
       end;
 
-
-      %case lists:member(Name,Queue) of
-      %%student is in the queue
-      %  true ->
-      %    io:format("Student in queue, waiting~n"),
-      %    QueueWait = 1000 * office:indexOf(Name,Queue),
-      %    From ! {self(), ok, QueueWait},
-      %    room([Students], Capacity, [Queue],Helping);
-      %    %student is not in the queue
-      %  false->
-      %    io:format("Student not in queue must be placed in queue~n"),
-      %    %need to construct the queue appropriately with reverse
-      %    NewQueue = office:putTail(Name,Queue),
-      %    QueueWait = 1000 * office:indexOf(Name,NewQueue),
-      %    From ! {self(), room_full, QueueWait},
-      %    room([Students], Capacity, [NewQueue],Helping)
-      %  end;
-
     {From, help_me, Name} ->
       case Helping of
         true->
@@ -163,7 +124,7 @@ room(Students, Capacity, Queue, Helping) ->
     % student thanks
     {From, thanks, Name} ->
       io:format("~s thanks you.~n", [Name]),
-      room([Students],Capacity,Queue,false)
+      room([Students],Capacity+1,Queue,false)
 end.
 
 studentWork(Name) ->
@@ -178,20 +139,23 @@ student(Office, Name) ->
   receive
     % Success; can enter room.
     {_, ok} ->
-      Office ! {self(), help_me, Name},
       studentWork(Name),
+      Office ! {self(), help_me, Name},
       io:format("~s ok without sleep.~n", [Name]),
-      Office ! {self(), leave, Name},
       Office ! {self(), thanks, Name},
+      Office ! {self(), leave, Name},
+
       io:format("~s left the Office.~n", [Name]);
 
   % Success; can enter room.
     {_, ok, SleepTime} ->
-      Office ! {self(), help_me, Name},
+
       io:format("~s ok with sleep.~n", [Name]),
       studentWork(Name),
-      Office ! {self(), leave, Name},
+      Office ! {self(), help_me, Name},
       Office ! {self(), thanks, Name},
+      Office ! {self(), leave, Name},
+
       io:format("~s left the Office.~n", [Name]);
 
   % Instructor is busy
