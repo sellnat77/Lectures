@@ -1,6 +1,25 @@
 -module(office).
 -export([room/4, student/2, officedemo/0, busyOffice/0, checkFront/2, putTail/2,indexOf/2, debugList/1,checkEmpty/1]).
 
+room(Students, Capacity, [], Helping) ->
+  io:format("Room called~n, current state is:~n"),
+  io:format("Students:"),
+  office:debugList(Students),
+  receive
+    {From, enter, Name} when Capacity > 0 ->
+          io:format("~s admitted no queue~n",[Name]),
+          From ! {self(), ok},
+          room([Name|Students], Capacity - 1,[],Helping);
+
+  % student entering, at capacity
+    {From, enter, Name} ->
+      %Queue is empty but at capacity
+          io:format("~s not in queue must be placed in queue because at capacity but queue is emtpy~n",[Name]),
+          %need to construct the queue appropriately with reverse
+          QueueWait = 1000,
+          From ! {self(), room_full, QueueWait},
+          room([Students], Capacity, [Name],Helping)
+  end;
 room(Students, Capacity, Queue, Helping) ->
   io:format("Room called~n, current state is:~n"),
   io:format("Students:"),
@@ -14,12 +33,6 @@ room(Students, Capacity, Queue, Helping) ->
       IsFront = office:checkFront(Name,Queue),
 
       if
-      %Empty queue - Immediate admittance
-        IsEmpty ->
-          io:format("~s admitted no queue~n",[Name]),
-          From ! {self(), ok},
-          room([Name|Students], Capacity - 1,[],Helping);
-
         %Non-empty queue but front of line
         IsFront ->
           io:format("~s admitted removing item from queue~n",[Name]),
@@ -33,7 +46,7 @@ room(Students, Capacity, Queue, Helping) ->
           room([Students], Capacity, [Queue],Helping);
 
         %Non-empty queue but not yet in queue
-        true ->
+        not IsMemeber, Queue =/= [] ->
           io:format("~s ISEMPTY",[IsEmpty]),
           io:format("~s the queue is ",[Queue]),
           io:format("~s not in queue must be placed in queue the queue is already populated with some items~n",[Name]),
@@ -43,7 +56,12 @@ room(Students, Capacity, Queue, Helping) ->
           From ! {self(), room_full, QueueWait},
           io:format("Queue:"),
           office:debugList(NewQueue),
-          room([Students], Capacity, [NewQueue],Helping)
+          room([Students], Capacity, [NewQueue],Helping);
+      %Empty queue - Immediate admittance
+        true ->
+          io:format("~s admitted no queue~n",[Name]),
+          From ! {self(), ok},
+          room([Name|Students], Capacity - 1,[],Helping)
       end;
 
 
