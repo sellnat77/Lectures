@@ -61,16 +61,14 @@ room(Students, Capacity, Queue, Helping) ->
   office:debugList(Queue),
   receive
     {From, enter, Name} when Capacity > 0 ->
-      io:format("~n~n recieved message when there is capacity"),
       IsEmpty = office:checkEmpty(Queue),
       IsMemeber = lists:member(Name, Queue),
-      io:format("MEMBER STATUS                   ~s",[IsMemeber]),
       IsFront = Name =:= office:first(Queue),
 
       if
         %Non-empty queue but front of line
         IsFront ->
-          io:format("~n~n~n~n~n~n~n~n~n~n FRONT OF LINE!!!!!!!~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~s admitted removing item from queue~n",[Name]),
+          io:format("~n~nFRONT OF LINE!!!!!!!~n~n~n~n~n~n~s admitted removing item from queue~n",[Name]),
           room([Name|Students], Capacity - 1,lists:delete(Name, Queue),Helping);
 
         %Non-empty queue but somewhere already inline
@@ -82,21 +80,15 @@ room(Students, Capacity, Queue, Helping) ->
 
         %Non-empty queue but not yet in queue
         true ->
-          io:format("~s ISEMPTY",[IsEmpty]),
-          io:format("~s the queue is ",[Queue]),
-          io:format("~s not in queue must be placed in queue the queue is already populated with some items~n",[Name]),
           %need to construct the queue appropriately with reverse
           NewQueue = office:putTail(Name,Queue),
           QueueWait = 1000 * office:index_of(Name,NewQueue),
           From ! {self(), room_full, QueueWait},
-          io:format("Queue:"),
-          office:debugList(NewQueue),
           room(Students, Capacity, NewQueue, Helping)
       end;
 
     % student entering, at capacity
     {From, enter, Name} ->
-      io:format("~n~n recieved message when there is no capacity"),
       QueueEmpty = Queue =:= [],
       IsFront = Name =:= office:first(Queue),
       IsMemeber = lists:member(Name,Queue),
@@ -107,7 +99,7 @@ room(Students, Capacity, Queue, Helping) ->
 
       %Non-empty queue but front of line
         IsFront,Helping =:= false ->
-          io:format("~n~n~n~n~n~n~n~n~n~n IS AT FRONT OF LINE BUT NO CAPACITY!!!!!!!~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~s~n",[Name]),
+          io:format("~n~nIS AT FRONT OF LINE BUT NO CAPACITY!!!!!!!~n~n~n~s~n",[Name]),
           %From ! {self(), ok},
           room(Students, Capacity,Queue,Helping);
 
@@ -121,12 +113,10 @@ room(Students, Capacity, Queue, Helping) ->
 
       %Queue is not empty but student not yet in line
         true ->
-          io:format("~s not in queue must be placed in existing queue and also at capacity~n",[Name]),
           %need to construct the queue appropriately with reverse
           NewQueue = office:putTail(Name,Queue),
           Index = office:index_of(Name,NewQueue),
           QueueWait = 1000 * Index,
-          io:format("sending message that room is full and must wait for ~B",[QueueWait]),
           From ! {self(), room_full, QueueWait},
           room(Students, Capacity, NewQueue, Helping)
       end;
@@ -146,7 +136,6 @@ room(Students, Capacity, Queue, Helping) ->
     % student leaving
     {From, leave, Name} ->
       io:format("~n~n~n~n~n~n~n~n~n~n~n~s Leaving.~n", [Name]),
-      io:format("~n~n~n~n~n~n~n~n~n~n~n~s is in ~p~n", [Name,Students]),
       % make sure they are already in the room
       case lists:member(Name, Students) of
         true ->
@@ -186,7 +175,6 @@ student(Office, Name) ->
 
   % Success; can enter room.
     {_, ok, SleepTime} ->
-
       io:format("~s ok with sleep.~n", [Name]),
       studentWork(Name),
       timer:sleep(SleepTime),
