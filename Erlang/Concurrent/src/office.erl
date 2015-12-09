@@ -78,7 +78,7 @@ room(Students, Capacity, Queue, Helping) ->
         a;
 
       %Non-empty queue but front of line
-        IsFront ->
+        IsFront,Helping =:= false ->
           io:format("~n~n~n~n~n~n~n~n~n~n FRONT OF LINE!!!!!!!~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~s admitted removing item from queue~n",[Name]),
           From ! {self(), ok},
           room([Name|Students], Capacity - 1,lists:delete(Name, Queue),Helping);
@@ -129,11 +129,11 @@ room(Students, Capacity, Queue, Helping) ->
         true ->
           io:format("~s Leaving.~n", [Name]),
           From ! {self(), ok},
-          room(lists:delete(Name, Students), Capacity + 1,Queue,false);
+          room(lists:delete(Name, Students), Capacity + 1,Queue,Helping);
         false ->
           From ! {self(), not_found},
           io:format("~s not found.~n", [Name]),
-          room(Students, Capacity,Queue,false)
+          room(Students, Capacity,Queue,Helping)
       end;
 
     % student thanks
