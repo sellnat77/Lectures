@@ -20,7 +20,7 @@ room(Students, Capacity, [], Helping) ->
           QueueWait = 1000,
           From ! {self(), room_full, QueueWait},
           io:format("~n~n~nStarted new queue"),
-          room([Students], Capacity, [Name],Helping)
+          room(Students, Capacity, Name,Helping)
   end;
 room(Students, Capacity, Queue, Helping) ->
   io:format("~n~nRoom called with an existing queue~n, current state is:~n"),
@@ -32,7 +32,7 @@ room(Students, Capacity, Queue, Helping) ->
     {From, enter, Name} when Capacity > 0 ->
       io:format("~n~n recieved message when there is capacity"),
       IsEmpty = office:checkEmpty(Queue),
-      IsMemeber = lists:member(Name, lists:append(Queue)),
+      IsMemeber = lists:member(Name, Queue),
       io:format("MEMBER STATUS                   ~s",[IsMemeber]),
       IsFront = office:checkFront(Name,Queue),
 
@@ -48,7 +48,7 @@ room(Students, Capacity, Queue, Helping) ->
           io:format("~s Already in line~n",[Name]),
           QueueWait = 1000 * office:index_of(Name,Queue),
           From ! {self(), room_full, QueueWait},
-          room([Students], Capacity, [Queue],Helping);
+          room(Students, Capacity, Queue,Helping);
 
         %Non-empty queue but not yet in queue
         true ->
@@ -61,7 +61,7 @@ room(Students, Capacity, Queue, Helping) ->
           From ! {self(), room_full, QueueWait},
           io:format("Queue:"),
           office:debugList(NewQueue),
-          room([Students], Capacity, [NewQueue],Helping)
+          room(Students, Capacity, NewQueue,Helping)
 
       end;
 
@@ -83,7 +83,7 @@ room(Students, Capacity, Queue, Helping) ->
           %need to construct the queue appropriately with reverse
           QueueWait = 1000 * office:index_of(Name,Queue),
           From ! {self(), room_full, QueueWait},
-          room([Students], Capacity, [Queue],Helping);
+          room(Students, Capacity, Queue,Helping);
         %Queue is not empty but student not yet in line
         true ->
           io:format("~s not in queue must be placed in existing queue and also at capacity~n",[Name]),
@@ -99,7 +99,7 @@ room(Students, Capacity, Queue, Helping) ->
           From ! {self(), room_full, QueueWait},
           io:format("Queue:"),
           office:debugList(NewQueue),
-          room([Students], Capacity, [NewQueue],Helping)
+          room(Students, Capacity, NewQueue,Helping)
       end;
 
     {From, help_me, Name} ->
@@ -107,11 +107,11 @@ room(Students, Capacity, Queue, Helping) ->
         true->
           io:format("helping true.~n"),
           From ! {self(), busy},
-          room([Students],Capacity,[Queue],Helping);
+          room(Students,Capacity,Queue,Helping);
         false->
           io:format("helping false.~n"),
           From ! {self(), ok},
-          room([Students],Capacity,[Queue],true)
+          room(Students,Capacity,Queue,true)
       end;
 
     % student leaving
@@ -121,17 +121,17 @@ room(Students, Capacity, Queue, Helping) ->
         true ->
           io:format("~s Leaving.~n", [Name]),
           From ! {self(), ok},
-          room(lists:delete(Name, Students), Capacity + 1,[Queue],false);
+          room(lists:delete(Name, Students), Capacity + 1,Queue,false);
         false ->
           From ! {self(), not_found},
           io:format("~s not found.~n", [Name]),
-          room([Students], Capacity,[Queue],false)
+          room(Students, Capacity,Queue,false)
       end;
 
     % student thanks
     {From, thanks, Name} ->
       io:format("~s thanks you.~n", [Name]),
-      room([Students],Capacity+1,Queue,false)
+      room(Students,Capacity+1,Queue,false)
 end.
 
 studentWork(Name) ->
