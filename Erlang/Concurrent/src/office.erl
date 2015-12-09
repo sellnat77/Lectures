@@ -1,5 +1,5 @@
 -module(office).
--export([room/4, student/2, officedemo/0, busyOffice/0, checkFront/2, putTail/2,indexOf/2, index_of/2, index_of/3, debugList/1,checkEmpty/1]).
+-export([room/4, student/2, officedemo/0, busyOffice/0, first/1, checkFront/2, putTail/2,indexOf/2, index_of/2, index_of/3, debugList/1,checkEmpty/1]).
 
 %Pattern matching to catch when queue is empty
 room(Students, Capacity, [], Helping) ->
@@ -20,7 +20,7 @@ room(Students, Capacity, [], Helping) ->
           QueueWait = 1000,
           From ! {self(), room_full, QueueWait},
           io:format("~n~n~nStarted new queue"),
-          room(Students, Capacity, Name,Helping)
+          room(Students, Capacity, [Name],Helping)
   end;
 room(Students, Capacity, Queue, Helping) ->
   io:format("~n~nRoom called with an existing queue~n, current state is:~n"),
@@ -34,7 +34,7 @@ room(Students, Capacity, Queue, Helping) ->
       IsEmpty = office:checkEmpty(Queue),
       IsMemeber = lists:member(Name, Queue),
       io:format("MEMBER STATUS                   ~s",[IsMemeber]),
-      IsFront = office:checkFront(Name,Queue),
+      IsFront = Name =:= office:first(Queue),
 
       if
         %Non-empty queue but front of line
@@ -68,17 +68,23 @@ room(Students, Capacity, Queue, Helping) ->
     % student entering, at capacity
     {From, enter, Name} ->
       io:format("~n~n recieved message when there is no capacity"),
-      IsFront = office:checkFront(Name,Queue),
+      QueueEmpty = Queue =:= [],
+      IsFront = Name =:= office:first(Queue),
       IsMemeber = lists:member(Name,Queue),
       if
       %Queue is empty but at capacity
+      QueueEmpty ->
+
+        a;
+
       %Non-empty queue but front of line
         IsFront ->
-          io:format("~s admitted removing item from queue~n",[Name]),
+          io:format("~n~n~n~n~n~n~n~n~n~n FRONT OF LINE!!!!!!!~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~n~s admitted removing item from queue~n",[Name]),
           From ! {self(), ok},
           room([Name|Students], Capacity - 1,lists:delete(Name, Queue),Helping);
         %Queue is not empty and current student is in line
         IsMemeber ->
+          io:format("~n~n~s is the head of the queue~n~n",[hd([Queue])]),
           io:format("~s already in queue~n",[Name]),
           %need to construct the queue appropriately with reverse
           QueueWait = 1000 * office:index_of(Name,Queue),
@@ -86,6 +92,7 @@ room(Students, Capacity, Queue, Helping) ->
           room(Students, Capacity, Queue,Helping);
         %Queue is not empty but student not yet in line
         true ->
+          io:format("~n~n~s is the head of the queue~n~n",[hd([Queue])]),
           io:format("~s not in queue must be placed in existing queue and also at capacity~n",[Name]),
           %need to construct the queue appropriately with reverse
           NewQueue = office:putTail(Name,Queue),
@@ -116,6 +123,7 @@ room(Students, Capacity, Queue, Helping) ->
 
     % student leaving
     {From, leave, Name} ->
+      io:format("~n~n~n~n~n~n~n~n~n~n~n~s Leaving.~n", [Name]),
       % make sure they are already in the room
       case lists:member(Name, Students) of
         true ->
@@ -182,9 +190,19 @@ busyOffice() ->
   io:format("Instructor is busy.~n"),
   timer:sleep(1000).
 
+first([]) -> undefined;
+first([H|_]) -> H.
+
 checkFront(_,[]) -> true;
-checkFront(Check,[H]) -> Check =:= H;
-checkFront(Check,[H|_])-> Check =:= H.
+checkFront(Check,List)->
+  io:format("Comparing ~s and ~s",[Check,hd(List)]),
+  Check =:= hd(List);
+checkFront(Check,[H|T]) ->
+  io:format("Comparing ~s and ~s",[Check,H]),
+  Check =:= H;
+checkFront(Check,H) ->
+  io:format("Comparing ~s and ~s",[Check,H]),
+  Check =:= H.
 
 putTail(Element, []) -> [Element];
 putTail(Element, [H]) -> lists:reverse([Element] ++ [H]);
