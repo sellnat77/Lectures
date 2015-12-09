@@ -32,7 +32,8 @@ room(Students, Capacity, Queue, Helping) ->
     {From, enter, Name} when Capacity > 0 ->
       io:format("~n~n recieved message when there is capacity"),
       IsEmpty = office:checkEmpty(Queue),
-      IsMemeber = lists:member(Name, Queue),
+      IsMemeber = lists:member(Name, lists:append(Queue)),
+      io:format("MEMBER STATUS                   ~s",[IsMemeber]),
       IsFront = office:checkFront(Name,Queue),
 
       if
@@ -185,7 +186,12 @@ checkFront(_,[]) -> true;
 checkFront(Check,[H]) -> Check =:= H;
 checkFront(Check,[H|_])-> Check =:= H.
 
-putTail(Element, List) -> lists:reverse([Element |lists:reverse(List)]).
+putTail(Element, []) -> [Element];
+putTail(Element, [H]) -> lists:reverse([Element] ++ [H]);
+putTail(Element, [H|T]) ->
+  io:format("HIT"),
+  Rev = lists:reverse(T),
+  [H] ++ lists:reverse([Element] ++ Rev).
 
 indexOf(_, []) -> 100000,
   io:format("NOT FOUND");
