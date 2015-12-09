@@ -55,13 +55,12 @@ room(Students, Capacity, [], Helping) ->
 
 room(Students, Capacity, Queue, Helping) ->
   io:format("~n~nRoom called with an existing queue~n, current state is:~n"),
-  io:format("Students:"),
+  io:format("~nStudents:"),
   office:debugList(Students),
-  io:format("Queue:"),
+  io:format("~nQueue:"),
   office:debugList(Queue),
   receive
     {From, enter, Name} when Capacity > 0 ->
-      IsEmpty = office:checkEmpty(Queue),
       IsMemeber = lists:member(Name, Queue),
       IsFront = Name =:= office:first(Queue),
 
@@ -89,14 +88,9 @@ room(Students, Capacity, Queue, Helping) ->
 
     % student entering, at capacity
     {From, enter, Name} ->
-      QueueEmpty = Queue =:= [],
       IsFront = Name =:= office:first(Queue),
       IsMemeber = lists:member(Name,Queue),
       if
-      %Queue is empty but at capacity
-      QueueEmpty ->
-        a;
-
       %Non-empty queue but front of line
         IsFront,Helping =:= false ->
           io:format("~n~nIS AT FRONT OF LINE BUT NO CAPACITY!!!!!!!~n~n~n~s~n",[Name]),
@@ -136,6 +130,7 @@ room(Students, Capacity, Queue, Helping) ->
     % student leaving
     {From, leave, Name} ->
       io:format("~n~n~n~n~n~n~n~n~n~n~n~s Leaving.~n", [Name]),
+
       % make sure they are already in the room
       case lists:member(Name, Students) of
         true ->
@@ -164,6 +159,7 @@ student(Office, Name) ->
   timer:sleep(rand:uniform(3000)),
   Office ! {self(), enter, Name},
   Office ! {self(), help_me, Name},
+
   receive
     % Success; can enter room.
     {_, ok} ->
@@ -184,8 +180,8 @@ student(Office, Name) ->
     {_, busy} ->
       office:busyOffice(),
       io:format("~s wanted help but the instructor was busy, asking again.~n", [Name]),
-      Office ! {self(), help_me, Name};
-      %student(Office, Name);
+      %Office ! {self(), help_me, Name};
+      student(Office, Name);
 
     % Office is full; sleep and try again.
     {_, room_full, SleepTime} ->
@@ -194,9 +190,9 @@ student(Office, Name) ->
       %Office ! {self(), help_me, Name},
       student(Office, Name)
   end,
-
   Office ! {self(), leave, Name},
-  Office ! {self(), thanks, Name}.
+  Office ! {self(), thanks, Name},
+  student(Office, Name).
 
 busyOffice() ->
   io:format("Instructor is busy.~n"),
